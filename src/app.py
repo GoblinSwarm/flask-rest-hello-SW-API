@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Character, Planet, Favorite
 #from models import Person
 
 app = Flask(__name__)
@@ -37,13 +37,53 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/user', methods=['GET'])
-def handle_hello():
+def handle_get_users():
+    users = User()
+    users = users.query.all()
+    return jsonify([item.serialize() for item in users]), 200
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+@app.route('/people', methods=['GET'])
+def handle_get_characters():
+    characters = Character()
+    characters = characters.query.all()
+    return jsonify([item.serialize() for item in characters]), 200
 
-    return jsonify(response_body), 200
+@app.route('/planets', methods=['GET'])
+def handle_get_planets():
+    planets = Planet()
+    planets = planets.query.all()
+    return jsonify([item.serialize() for item in planets]), 200
+
+@app.route('/user/<int:theid>', methods=['GET'])
+def handle_get_one_user(theid=None):
+    if theid is not None:
+        user = User()
+        user = user.query.get(theid)
+        if user is not None:
+            return jsonify(user.serialize()), 200
+        else:
+            return jsonify({"message": "User not found"}), 404
+
+@app.route('/character/<int:theid>')
+def handle_get_one_character(theid=None):
+    if theid is not None:
+        character = Character()
+        character = character.query.get(theid)
+        if character is not None:
+            return jsonify(character.serialize()), 200
+        else:
+            return jsonify({"message": "Character not found"}), 404
+
+@app.route('/planet/<int:theid>', methods=['GET'])
+def handle_get_one_planet(theid=None):
+    if theid is not None:
+        planet = Planet()
+        planet = planet.query.get(theid)
+        if planet is not None:
+            return jsonify(planet.serialize()), 200
+        else: 
+            return jsonify({"message": "Planet not found"}), 404
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
