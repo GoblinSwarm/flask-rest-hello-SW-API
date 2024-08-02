@@ -64,7 +64,7 @@ def handle_get_one_user(theid=None):
         else:
             return jsonify({"message": "User not found"}), 404
 
-@app.route('/character/<int:theid>')
+@app.route('/character/<int:theid>', methods=['GET'])
 def handle_get_one_character(theid=None):
     if theid is not None:
         character = Character()
