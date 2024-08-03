@@ -56,7 +56,6 @@ class Character(db.Model):
     fullname = db.Column(db.String(250))
     birth_year = db.Column(db.String(20), nullable=False)
     hair_color = db.Column(db.String(50), nullable=False)
-    
     height = db.Column(db.Integer)
     weight = db.Column(db.Integer)
 
@@ -73,18 +72,16 @@ class Character(db.Model):
             "weight": self.weight,
         }
 
-
-
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     nature = db.Column(db.Enum(Nature), nullable=False)
     planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=True, unique=True)  
     character_id = db.Column(db.Integer, db.ForeignKey('character.id'), nullable=True, unique=True)
+    # Relationships
     user = db.relationship(User)
     planet = db.relationship(Planet, uselist=False) 
     character = db.relationship(Character, uselist=False)
-
 
 
 
