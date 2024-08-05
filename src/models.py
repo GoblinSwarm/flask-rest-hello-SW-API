@@ -13,8 +13,7 @@ class User(db.Model):
     firstname = db.Column(db.String(120), nullable=False)
     lastname = db.Column(db.String(120), nullable=False)
     username = db.Column(db.String(120), nullable=False)
-    password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    password = db.Column(db.String(80), nullable=False)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -83,6 +82,15 @@ class Favorite(db.Model):
     planet = db.relationship(Planet, uselist=False) 
     character = db.relationship(Character, uselist=False)
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            #Preguntar porque Nature no es serializable, es por ser Enum ?
+            #"nature": self.nature,
+            "planet_id": self.planet_id,
+            "character_id": self.character_id,
+        }
 
 
 #Right now i dont need the diagram, but its interesting in a certain way to have it here

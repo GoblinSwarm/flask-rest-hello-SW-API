@@ -54,6 +54,12 @@ def handle_get_planets():
     planets = planets.query.all()
     return jsonify([item.serialize() for item in planets]), 200
 
+@app.route('/favorite', methods=['GET'])
+def handle_get_favorites():
+    favorites = Favorite()
+    favorites = favorites.query.all()
+    return jsonify([item.serialize() for item in favorites]), 200
+
 @app.route('/user/<int:theid>', methods=['GET'])
 def handle_get_one_user(theid=None):
     if theid is not None:
@@ -117,7 +123,6 @@ def delete_people_from_favorite(theid=None):
 @app.route("/favorite/planet/<int:theid>", methods=['POST'])
 def handle_add_planet_to_favorite(theid=None):
     favorite = Favorite()
-
     #favorite = favorite["planet_id"].query.get(theid)
 
     #Does this work?
@@ -145,7 +150,24 @@ def handle_add_character_to_favorite(theid=None):
         db.session.add(favorite)
     return jsonify({"message": "Favorite added"}), 204
 
+@app.route('/user', methods=['POST'])
+def add_user():
+    data = request.json
 
+    required_fields = ['email', 'firstname', 'lastname', 'username', 'password']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"'{field}' is required"}), 400
+
+    user = User(email=data['email'],
+                firstname=data['firstname'],
+                lastname=data['lastname'],
+                username=data['username'],
+                password=data['password'])
+    #email, firstname, lastname, username
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"message": "I am here mf"})
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
