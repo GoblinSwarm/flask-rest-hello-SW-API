@@ -36,7 +36,7 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
+@app.route('/users', methods=['GET'])
 def handle_get_users():
     users = User()
     users = users.query.all()
@@ -60,7 +60,7 @@ def handle_get_favorites():
     favorites = favorites.query.all()
     return jsonify([item.serialize() for item in favorites]), 200
 
-@app.route('/user/<int:theid>', methods=['GET'])
+@app.route('/users/<int:theid>', methods=['GET'])
 def handle_get_one_user(theid=None):
     if theid is not None:
         user = User()
@@ -70,7 +70,7 @@ def handle_get_one_user(theid=None):
         else:
             return jsonify({"message": "User not found"}), 404
 
-@app.route('/character/<int:theid>', methods=['GET'])
+@app.route('/people/<int:theid>', methods=['GET'])
 def handle_get_one_character(theid=None):
     if theid is not None:
         character = Character()
@@ -80,7 +80,7 @@ def handle_get_one_character(theid=None):
         else:
             return jsonify({"message": "Character not found"}), 404
 
-@app.route('/planet/<int:theid>', methods=['GET'])
+@app.route('/planets/<int:theid>', methods=['GET'])
 def handle_get_one_planet(theid=None):
     if theid is not None:
         planet = Planet()
