@@ -84,6 +84,68 @@ def handle_get_one_planet(theid=None):
         else: 
             return jsonify({"message": "Planet not found"}), 404
 
+@app.route("/favorite/planet/<int:theid>", methods=["DELETE"])
+def delete_planet_from_favorite(theid=None):
+    
+    favorite = Favorite()
+    favorite = favorite.query.all()
+
+    for fav in favorite:
+        if fav['nature'] == 'PLANET':
+            if fav['planet_id'] == theid:
+                db.session.delete(fav)
+                db.session.commit()
+                return jsonify({"message": "Favorito borrado correctamente"}), 200
+    
+    return jsonify({"message": "Favorito ya esta borrado"}), 404
+
+@app.route("/favorite/people/<int:theid>", methods=["DELETE"])
+def delete_people_from_favorite(theid=None):
+    
+    favorite = Favorite()
+    favorite = favorite.query.all()
+
+    for fav in favorite:
+        if fav['nature'] == 'CHARACTER':
+            if fav['character_id'] == theid:
+                db.session.delete(fav)
+                db.session.commit()
+                return jsonify({"message": "Favorito borrado correctamente"}), 200
+    
+    return jsonify({"message": "Favorito ya esta borrado"}), 404
+
+@app.route("/favorite/planet/<int:theid>", methods=['POST'])
+def handle_add_planet_to_favorite(theid=None):
+    favorite = Favorite()
+
+    #favorite = favorite["planet_id"].query.get(theid)
+
+    #Does this work?
+    favorite = db.session.query(Favorite).filter_by(planet_id=theid, nature='PLANET').first()
+
+    if favorite is None:
+        favorite['nature'] = 'PLANET'
+        favorite['planet_id'] = theid
+        favorite['character_id'] = ''
+        db.session.add(favorite)
+    return jsonify({"message": "Favorite added"}), 204
+
+@app.route("/favorite/people/<int:theid>", methods=['POST'])
+def handle_add_character_to_favorite(theid=None):
+    favorite = Favorite()
+    #favorite = favorite["planet_id"].query.get(theid)
+    
+    #Does this work?
+    favorite = db.session.query(Favorite).filter_by(character_id=theid, nature='CHARACTER').first()
+
+    if favorite is None:
+        favorite['nature'] = 'CHARACTER'
+        favorite['planet_id'] = ''
+        favorite['character_id'] = theid
+        db.session.add(favorite)
+    return jsonify({"message": "Favorite added"}), 204
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
