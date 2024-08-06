@@ -86,8 +86,7 @@ class Favorite(db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            #Preguntar porque Nature no es serializable, es por ser Enum ?
-            #"nature": self.nature,
+            "nature": self.nature.value,
             "planet_id": self.planet_id,
             "character_id": self.character_id,
         }
