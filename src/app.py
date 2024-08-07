@@ -186,17 +186,19 @@ def get_people_population():
         result = requests.get(item.get("url"))
         result = result.json()
         result = result.get("result")
-        people = Character()
-        people.name = result.get("properties").get("name")
-        people.height = result.get("properties").get("height")
-        people.mass = result.get("properties").get("mass")
-        people.hair_color = result.get("properties").get("hair_color")
-        people.skin_color = result.get("properties").get("skin_color")
-        people.eye_color = result.get("properties").get("eye_color")
-        people.birth_year = result.get("properties").get("birth_year")
-        people.gender = result.get("properties").get("hair_color")
-        db.session.add(people)
 
+        char = Character()
+        
+        char.name = result.get("properties").get("name")
+        char.height = result.get("properties").get("height")
+        char.mass = result.get("properties").get("mass")
+        char.hair_color = result.get("properties").get("hair_color")
+        char.skin_color = result.get("properties").get("skin_color")
+        char.eye_color = result.get("properties").get("eye_color")
+        char.birth_year = result.get("properties").get("birth_year")
+        char.gender = result.get("properties").get("gender")
+        db.session.add(char)
+        
     try:
         db.session.commit()
         return jsonify("Adding Characters to DB"), 200
@@ -212,11 +214,14 @@ def get_planet_population():
     response = response.get("results")
 
     for item in response:
-        result = requests.get(item.get("properties").get('url'))
+
+        result = requests.get(item.get('url'))
         result = result.json()
         result = result.get("result")
         planet = Planet()
+
         planet.name = result.get("properties").get("name")
+        planet.url = result.get("properties").get("url")
         planet.diameter = result.get("properties").get("diameter")
         planet.rotation_period = result.get("properties").get("rotation_period")
         planet.orbital_period = result.get("properties").get("orbital_period")
@@ -225,6 +230,8 @@ def get_planet_population():
         planet.climate = result.get("properties").get("climate")
         planet.terrain = result.get("properties").get("terrain")
         planet.surface_water = result.get("properties").get("surface_water")
+        print(planet.serialize())
+        print('-----------------------------')
         db.session.add(planet)
 
     try:
