@@ -1,12 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
-from enum import Enum as PyEnum
 
 db = SQLAlchemy()
-
-class Nature(PyEnum):
-    PLANET = 'planet'
-    CHARACTER = 'character'
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,7 +1,7 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-import os
+import os 
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
@@ -9,7 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Character, Planet, Favorite
-#from models import Person
+import requests
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -121,53 +121,119 @@ def delete_people_from_favorite(theid=None):
     return jsonify({"message": "Favorito ya esta borrado"}), 404
 
 @app.route("/favorite/planet/<int:theid>", methods=['POST'])
-def handle_add_planet_to_favorite(theid=None):
+def handle_add_planet_to_favorite(planet_id=None):
+    #This id is fictional as the id will be brought by the body
+    user_id = 1;
+
     favorite = Favorite()
-    #favorite = favorite["planet_id"].query.get(theid)
+    favorite.user_id = user_id
+    favorite.planet_id = planet_id
 
-    #Does this work?
-    favorite = db.session.query(Favorite).filter_by(planet_id=theid, nature='PLANET').first()
+    db.session.add(favorite)
 
-    if favorite is None:
-        favorite['nature'] = 'PLANET'
-        favorite['planet_id'] = theid
-        favorite['character_id'] = ''
-        db.session.add(favorite)
-    return jsonify({"message": "Favorite added"}), 204
+    try:
+        db.session.commit()
+        return jsonify("Se guardo planeta exitosamente") , 201
+    except Exception as error:
+        db.session.rollback
+        return jsonify({"message": "Planet couldnt be saved"}), 400
 
 @app.route("/favorite/people/<int:theid>", methods=['POST'])
-def handle_add_character_to_favorite(theid=None):
-    favorite = Favorite()
-    #favorite = favorite["planet_id"].query.get(theid)
-    
-    #Does this work?
-    favorite = db.session.query(Favorite).filter_by(character_id=theid, nature='CHARACTER').first()
+def handle_add_character_to_favorite(character_id=None):
+    #This id is fictional as the id will be brought by the body
+    user_id = 1;
 
-    if favorite is None:
-        favorite['nature'] = 'CHARACTER'
-        favorite['planet_id'] = ''
-        favorite['character_id'] = theid
-        db.session.add(favorite)
-    return jsonify({"message": "Favorite added"}), 204
+    favorite = Favorite()
+    favorite.user_id = user_id
+    favorite.character_id = character_id
+
+    db.session.add(favorite)
+
+    try:
+        db.session.commit()
+        return jsonify("Se guardo personaje exitosamente") , 201
+    except Exception as error:
+        db.session.rollback
+        return jsonify({"message": "Personaje couldnt be saved"}), 400
 
 @app.route('/user', methods=['POST'])
 def add_user():
     data = request.json
 
-    required_fields = ['email', 'firstname', 'lastname', 'username', 'password']
+    required_fields = ['email', 'fullname', 'username', 'password']
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"'{field}' is required"}), 400
 
     user = User(email=data['email'],
-                firstname=data['firstname'],
-                lastname=data['lastname'],
+                fullname=data['fullname'],
                 username=data['username'],
                 password=data['password'])
     #email, firstname, lastname, username
     db.session.add(user)
     db.session.commit()
     return jsonify({"message": "I am here mf"})
+
+#Population starts here
+@app.route("/people/populate", methods=['GET'])
+def get_people_population():
+    #https://www.swapi.tech/api/people?page=1&limit=2
+    response = requests.get("https://www.swapi.tech/api/people?page=1&limit=300")
+    response = response.json()
+    response = response.get("results")
+
+    for item in response:
+        result = requests.get(item.get("url"))
+        result = result.json()
+        result = result.get("result")
+        people = Character()
+        people.name = result.get("properties").get("name")
+        people.height = result.get("properties").get("height")
+        people.mass = result.get("properties").get("mass")
+        people.hair_color = result.get("properties").get("hair_color")
+        people.skin_color = result.get("properties").get("skin_color")
+        people.eye_color = result.get("properties").get("eye_color")
+        people.birth_year = result.get("properties").get("birth_year")
+        people.gender = result.get("properties").get("hair_color")
+        db.session.add(people)
+
+    try:
+        db.session.commit()
+        return jsonify("Adding Characters to DB"), 200
+    except Exception as error:
+        print(error)
+        db.session.rollback()
+        return jsonify("error"), 500
+
+@app.route("/planet/populate", methods=['GET'])
+def get_planet_population():
+    response = requests.get("https://www.swapi.tech/api/planets?page=1&limit=300")
+    response = response.json()
+    response = response.get("results")
+
+    for item in response:
+        result = requests.get(item.get("properties").get('url'))
+        result = result.json()
+        result = result.get("result")
+        planet = Planet()
+        planet.name = result.get("properties").get("name")
+        planet.diameter = result.get("properties").get("diameter")
+        planet.rotation_period = result.get("properties").get("rotation_period")
+        planet.orbital_period = result.get("properties").get("orbital_period")
+        planet.gravity = result.get("properties").get("gravity")
+        planet.population = result.get("properties").get("population")
+        planet.climate = result.get("properties").get("climate")
+        planet.terrain = result.get("properties").get("terrain")
+        planet.surface_water = result.get("properties").get("surface_water")
+        db.session.add(planet)
+
+    try:
+        db.session.commit()
+        return jsonify("Adding Planet to DB"), 200
+    except Exception as error:
+        print(error)
+        db.session.rollback()
+        return jsonify("error"), 500
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
